@@ -1,8 +1,0 @@
-== Orchestra ==
-
-Orchestra will contain the following packages:
-
-- Tokyo (a wrapper for Rufus::Tokyo adding fundamential ORM functionality)
-- REST  (an easy way to consume and publish your models)
-
-This project is alpha version and is targetted towards projects with a total service oriented architecture.

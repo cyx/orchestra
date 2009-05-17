@@ -17,6 +17,7 @@ module Orchestra
           raise Error, Error::UID_GEN
         end
       end
+      alias :create :post
 
       def put( uid, attributes = {} )
         attrs = attributes_with_meta( attributes )
@@ -28,12 +29,15 @@ module Orchestra
 
         model = new( attrs.merge( :pk => uid ) )
       end
+      alias :update :put
 
+      
       def get( uid )
         if attributes = db[id(uid)]
           model = new( attributes.merge( :pk => uid ) )
         end
       end
+      alias :find :get
 
       def delete( uid )
         begin
@@ -44,10 +48,12 @@ module Orchestra
           meta[:size] = meta[:size] - 1
         end
       end
+      alias :destroy :delete
 
       def size
         meta[:size]
       end
+      alias :count :size
 
       protected
       def attributes_with_meta( attributes )
