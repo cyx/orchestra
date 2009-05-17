@@ -16,17 +16,22 @@ it comes to searching.
 Examples:
 
     user = User.create( 'email' => 'john@example.com' )
-    => #<User:0x0000000098b070
+    => #<User:0x98b70
     @attributes={"email"=>"john@example.com", "_rev"=>"1242273425590",
     "_class"=>"User", "updated_at"=>"1242273425", "created_at"=>"1242273425"}, @id=1>
+    
     user.id
     => 1
+
     user.email = 'jane@example.com'
     => "jane@example.com"
+
     user.save
     => true
+
     user.reload
     => true
+
     user.email
     => jane@example.com
 
