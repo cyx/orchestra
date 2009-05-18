@@ -182,15 +182,15 @@ end
 describe "given mark abaya, rico blanco, pepe smith, and david aguire" do
   before do
     User.delete_all
-    @mark = User.create( 'name' => 'abaya, mark' )
-    @pepe = User.create( 'name' => 'smith, pepe' )
-    @rico = User.create( 'name' => 'blanco, rico' )
-    @david = User.create( 'name' => 'aguire, david' )
+    @mark = User.create( 'name' => 'abaya, mark', 'type' => 'rocker' )
+    @pepe = User.create( 'name' => 'smith, pepe', 'type' => 'rocker' )
+    @rico = User.create( 'name' => 'blanco, rico', 'type' => 'rocker' )
+    @david = User.create( 'name' => 'aguire, david', 'type' => 'rocker' )
   end
 
   describe "when sorted by name" do
     before do
-      @sorted = User.select { |u| u._class == 'User' }.sort_by { |u| u.name }
+      @sorted = User.sort_by { |u| u.name }
     end
 
     it "should return mark abaya as the first result" do
@@ -208,9 +208,86 @@ describe "given mark abaya, rico blanco, pepe smith, and david aguire" do
     it "should return pepe as the last" do
       @sorted.entries.fourth.should == @pepe
     end
-
-
   end
 
+  describe "when sorted by name and sliced 0, 2" do
+    before do
+      @sliced = User.sort_by { |u| u.name }.slice( 0, 2 )
+    end
 
+    it "should return 2 entries only" do
+      @sliced.size.should.equal 2
+    end
+
+    it "should return only mark abaya and david" do
+      @sliced.entries.should == [ @mark, @david ]
+    end
+  end
+
+  describe "when sorted by name and asked who's first" do
+    before do
+      @first = User.sort_by { |u| u.name }.first
+    end
+
+    it "should return mark" do
+      @first.should.equal @mark
+    end
+  end
+
+  describe "when sorted by name and detected name with pepe" do
+    before do
+      @result = User.sort_by { |u| u.name }.detect { |u| u.name =~ 'pepe' }
+    end
+
+    it "should return pepe" do
+      @result.should == @pepe
+    end
+  end
+
+  describe "when asked if there's any users with name equal to mark" do
+    before do
+      @result = User.any? { |u| u.name == 'abaya, mark' }
+    end
+
+    it "should return true" do
+      @result.should.equal true
+    end
+  end
+
+  describe "when asked if all users are rockers" do
+    before do
+      @result = User.all? { |u| u.type == 'rocker' }
+    end
+
+    it "should return true" do
+      @result.should.equal true
+    end
+  end
+
+  describe "when asked if there's any user available" do
+    before do
+      @result = User.any?
+    end
+
+    it "should return true" do
+      @result.should.equal true
+    end
+  end
+
+  describe "when asked who's first" do
+    it "should return User" do
+      User.first.should.be.instance_of(User)
+    end
+  end
+
+  describe "when we check if users are empty" do
+    it "should return false" do
+      User.empty?.should.equal false
+    end
+
+    describe "when we delete_all users" do
+      User.delete_all
+      User.empty?.should.equal true
+    end
+  end
 end

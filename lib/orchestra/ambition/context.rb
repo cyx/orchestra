@@ -5,8 +5,9 @@ module Orchestra
         @klass     = klass
         @db        = db
         @query   ||= Storage.table_query( @db )
-        @fields    = []
+        @fields    = [ Condition.new('_class', :equals, klass) ]
         @sorting   = []
+        @slicing   = nil
       end
 
       def size
@@ -15,22 +16,47 @@ module Orchestra
         size
       end
 
-      class Sorter
-        attr_reader :sorting
+      def sort_by
+        yield  Orchestra::Ambition::Sorter.new( @sorting )
+        return self
+      end
 
-        def initialize( sorting )
-          @sorting = sorting
-        end
+      def select
+        yield  self
+        return self
+      end
 
-        def method_missing( meth, *args )
-          @sorting << [ meth.to_s, args.first ]
+      def detect
+        yield  self
+        return first
+      end
+
+      def slice( offset, limit )
+        @slicing = [ offset, limit ]
+        return self
+      end
+
+      def first( limit = nil )
+        if limit
+          slice( 0, limit )
+        else
+          slice( 0, 1 )
+          to_a.first
         end
       end
 
-      def sort_by( &block )
-        sorter = Sorter.new( @sorting )
-        block.call( sorter )
-        self
+      def any?
+        yield  self if block_given?
+        return first != nil
+      end
+      
+      def empty?
+        @klass.size.zero?
+      end
+      
+      def all?
+        yield  self
+        return self.size == @klass.size
       end
 
       def to_a
@@ -57,6 +83,10 @@ module Orchestra
 
         @sorting.each do |field, direction|
           @query.order_by( field.to_s, (direction || :asc).to_sym )
+        end
+
+        if @slicing
+          @query.limit( @slicing.last, @slicing.first )
         end
 
         @query.pk_only if pk_only

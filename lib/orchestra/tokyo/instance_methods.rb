@@ -30,7 +30,7 @@ module Orchestra
       alias :to_s :inspect
 
       def ==( other_model )
-        self.id and self.id == other_model.id
+        self and other_model and self.id and self.id == other_model.id
       end
     end
   end
