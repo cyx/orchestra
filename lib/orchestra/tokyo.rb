@@ -31,7 +31,6 @@ module Orchestra
       end
       alias :update :put
 
-      
       def get( uid )
         if attributes = db[id(uid)]
           model = new( attributes.merge( :pk => uid ) )
@@ -49,6 +48,10 @@ module Orchestra
         end
       end
       alias :destroy :delete
+
+      def delete_all
+        db.delete_keys_with_prefix( self.name )
+      end
 
       def size
         meta[:size]
@@ -92,6 +95,7 @@ module Orchestra
         model = self.class.get( id )
         self.attributes = model.attributes
       end
+      alias :reload :refresh
 
       def delete
         self.class.delete( id )
@@ -100,6 +104,7 @@ module Orchestra
       else
         return true
       end
+      alias :destroy :delete
     end
   end
 end
