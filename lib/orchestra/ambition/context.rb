@@ -1,12 +1,10 @@
-require 'orchestra/blankslate'
-
 module Orchestra
   module Ambition
     class Context < Orchestra::BlankSlate
       def __prepare__( klass, db )
         @klass     = klass
         @db        = db
-        @query   ||= Orchestra::TableAdapter.query( @db )
+        @query   ||= Storage.table_query( @db )
         @fields    = []
         @sorting   = []
       end

@@ -64,7 +64,7 @@ module Orchestra
       end
 
       def db
-        @db ||= Orchestra::TableAdapter.new
+        @db ||= Storage.table
       end
 
       def id( uid )

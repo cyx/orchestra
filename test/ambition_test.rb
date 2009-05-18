@@ -208,7 +208,7 @@ describe "given mark abaya, rico blanco, pepe smith, and david aguire" do
     it "should return pepe as the last" do
       @sorted.entries.fourth.should == @pepe
     end
-    
+
 
   end
 

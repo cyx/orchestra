@@ -15,7 +15,7 @@ module Orchestra
       end
 
       def hash
-        @hash ||= Orchestra::HashAdapter.new
+        @hash ||= Orchestra::Storage.hash
       end
     end
   end
