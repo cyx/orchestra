@@ -15,7 +15,7 @@ module Orchestra
       end
 
       def hash
-        @hash ||= Rufus::Tokyo::Tyrant.new( 'localhost', 1979 )
+        @hash ||= Orchestra::HashAdapter.new
       end
     end
   end

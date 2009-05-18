@@ -25,7 +25,7 @@ module Orchestra
 
     def set( field, value )
       if field.to_sym == self.class.dataspace_primary_key
-        self.id = value
+        self.id = normalize_primary_key(value)
       else
         attributes[field.to_s] = value
       end
@@ -37,7 +37,7 @@ module Orchestra
     end
     alias :[] :get
 
-    protected
+    private
     def method_missing(method, *args)
       if attributes.keys.include?( method.to_s )
         get( method )
@@ -46,6 +46,10 @@ module Orchestra
       else
         super( method, *args )
       end
+    end
+
+    def normalize_primary_key( value )
+      value.to_s.gsub(/^[a-zA-Z\_]+:/, '').to_i
     end
   end
 end
