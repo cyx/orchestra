@@ -12,7 +12,11 @@ module Orchestra
           'port' => 1979
         },
 
-        'storage_engine' => 'Edo'
+        'storage_engine' => 'Tokyo',
+
+        'result_set' => {
+          'default_limit' => 100
+        }
       }
     end
 

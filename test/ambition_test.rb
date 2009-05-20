@@ -290,4 +290,28 @@ describe "given mark abaya, rico blanco, pepe smith, and david aguire" do
       User.empty?.should.equal true
     end
   end
+
+  describe "when we execute each on users sorted by name" do
+    before do
+      @results = []
+      User.sort_by { |u| u.name }.each { |u| @results << u }
+    end
+
+    it "should return mark first" do
+      @results.first.should.equal @mark
+    end
+
+    it "should return david second" do
+      @results.second.should.equal @david
+    end
+
+    it "should return rico third" do
+      @results.third.should.equal @rico
+    end
+
+    it "should return pepe last" do
+      @results.fourth.should.equal @pepe
+    end
+  end
+
 end
