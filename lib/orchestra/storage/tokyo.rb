@@ -10,10 +10,6 @@ module Orchestra
       def self.hash( host, port )
         Rufus::Tokyo::Tyrant.new( host, port )
       end
-
-      def self.table_query( db )
-        Rufus::Tokyo::TableQuery.new( db )
-      end
     end
   end
 end

@@ -2,8 +2,6 @@ module Orchestra
   module Tokyo
     module ClassMethods
       def post( attributes = {} )
-        meta[:size] = meta[:size] + 1
-
         if uid = db.generate_unique_id
           put( uid, attributes )
         else
@@ -36,19 +34,16 @@ module Orchestra
           db.delete( id(uid) )
         rescue Exception => e
           raise Error, sprintf(Error::DELETE, uid)
-        else
-          meta[:size] = meta[:size] - 1
         end
       end
       alias :destroy :delete
 
       def delete_all
-        db.delete_keys_with_prefix( self.name )
-        meta[:size] = 0
+        db.clear
       end
 
       def size
-        meta[:size]
+        db.size
       end
       alias :count :size
 
@@ -64,15 +59,11 @@ module Orchestra
       end
 
       def db
-        @db ||= Storage.table
+        @db ||= Storage.table( self )
       end
 
       def id( uid )
         "#{self.name}:#{uid}"
-      end
-
-      def meta
-        @meta ||= Meta.new( self )
       end
     end
   end

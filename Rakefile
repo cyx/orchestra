@@ -7,47 +7,52 @@ end
 task :default => :test
 
 namespace :orchestra do
-  desc "Start a tokyo table and tokyo hash engine on ports 1978 and 1979"
+  desc "Start a cluster of TokyoTyrant servers for each model"
   task :start do
+    require 'lib/orchestra'
     require 'fileutils'
+    require 'pathname'
 
-    root  = File.join(File.dirname(__FILE__))
-    tpath = 'tmp/table'
-    hpath = 'tmp/hash'
+    data_path = File.join(Orchestra.root, 'data/models')
+    tmp_path  = File.join(Orchestra.root, 'tmp')
 
-    tport = 1978
-    hport = 1979
+    unless File.exist?( data_path )
+      puts "Creating data/models"
 
-    unless File.exist?( File.join(root, tpath) )
-      puts "Creating #{tpath}"
-
-      FileUtils.mkdir_p( File.join(root, tpath) )
+      FileUtils.mkdir_p( data_path )
     end
 
-    unless File.exist?( File.join(root, hpath) )
-      puts "Creating #{hpath}"
-
-      FileUtils.mkdir_p( File.join(root, hpath) )
+    unless File.exist?( tmp_path )
+      puts "Creating tmp"
+      FileUtils.mkdir_p( tmp_path )
     end
 
-    puts "Starting the TokyoTyrant server (for Table) on port #{tport}"
-    `ttserver -port #{tport} -dmn -pid #{root}/#{tpath}/pid -log #{root}/#{tpath}/log #{root}/#{tpath}/casket.tct`
+    data_path = Pathname.new(data_path).realpath
+    tmp_path  = Pathname.new(tmp_path).realpath
 
-    puts "Starting the TokyoTyrant server (for Hash) on port #{hport}"
-    `ttserver -port #{hport} -dmn -pid #{root}/#{hpath}/pid -log #{root}/#{hpath}/log #{root}/#{hpath}/casket.tch`
+    Orchestra::Config.models.each do |c|
+      pid    = "#{tmp_path}/#{c['name']}.pid"
+      log    = "#{tmp_path}/#{c['name']}.log"
+      casket = "#{data_path}/#{c['name']}.tct"
+
+      puts "Starting a server for #{c['name']} on #{c['host']}:#{c['port']}"
+      `ttserver -port #{c['port']} -dmn -pid #{pid} -log #{log} #{casket}`
+    end
   end
 
   task :stop do
-    root  = File.join(File.dirname(__FILE__))
-    tpath = 'tmp/table'
-    hpath = 'tmp/hash'
+    require 'lib/orchestra'
+    require 'fileutils'
 
-    [ tpath, hpath ].each do |path|
-      file = File.join( root, path, 'pid' )
-      if File.exist?( file )
-        `kill -TERM \`cat #{file}\``
-        FileUtils.rm( file )
+    tmp_path = File.join(Orchestra.root, 'tmp')
 
+    Orchestra::Config.models.each do |c|
+      pid = "#{tmp_path}/#{c['name']}.pid"
+
+      if File.exist?( pid )
+        `kill -TERM \`cat #{pid}\``
+        puts "Stopping the server for #{c['name']}"
+        FileUtils.rm( pid )
       end
     end
   end

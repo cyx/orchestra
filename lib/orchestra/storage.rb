@@ -3,18 +3,10 @@ module Orchestra
     autoload :Tokyo,    'orchestra/storage/tokyo'
     autoload :Edo,      'orchestra/storage/edo'
 
-    @@engine = Config.storage_engine
+    @@engine = Config.adapter
 
-    def self.table
-      @@engine.table( Config[:table, :host], Config[:table, :port] )
-    end
-
-    def self.hash
-      @@engine.hash( Config[:hash, :host], Config[:hash, :port] )
-    end
-
-    def self.table_query( db )
-      @@engine.table_query( db )
+    def self.table( klass )
+      @@engine.table( Config.host( klass ), Config.port( klass ) )
     end
   end
 end

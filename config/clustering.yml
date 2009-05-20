@@ -1,0 +1,15 @@
+# Orchestra uses only TokyoCabinet and TokyoTyrant as the backend 
+# for now. But you may choose between two different adapters:
+# - Tokyo (Ruby FFI based)
+# - Edo   (Pure Ruby based on the original author's Ruby driver)
+adapter: Tokyo
+
+# Orchestra starts a new ttserver / for each model
+# Specify a starting port here
+port: 54321
+
+models:
+  - User
+  - Group
+  - Role
+

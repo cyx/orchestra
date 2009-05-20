@@ -1,6 +1,5 @@
 module Orchestra
   module Tokyo
-    autoload :Meta,            'orchestra/tokyo/meta'
     autoload :Error,           'orchestra/tokyo/error'
     autoload :ClassMethods,    'orchestra/tokyo/class_methods'
     autoload :InstanceMethods, 'orchestra/tokyo/instance_methods'

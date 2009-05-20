@@ -4,7 +4,7 @@ module Orchestra
       def __prepare__( klass, db )
         @klass     = klass
         @db        = db
-        @fields    = [ Condition.new('_class', :equals, klass) ]
+        @fields    = []
         @sorting   = []
         @slicing   = nil
       end
@@ -57,7 +57,7 @@ module Orchestra
       end
 
       def to_a
-        __results__.map { |a| @klass.new(a) } 
+        __results__.map { |a| @klass.new(a) }
       end
       alias :entries :to_a
 
