@@ -1,3 +1,4 @@
 .fuse*
 tmp
 data
+._*

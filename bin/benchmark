@@ -11,6 +11,9 @@ require ROOT + '/test/test_helper'
 $db    = User.send(:db)
 $data1 = { 'email' => 'email@example.com', 'name' => 'john doe', 'role' => 'admin', 'access' => '5' }
 
+require ROOT + '/test/fixtures/ar_user'
+ArUser.truncate
+
 def h1( s ); puts s; puts '=' * s.length; puts; end
 def h2( s ); puts s; puts '-' * s.length; end
 def bm( s ); h2(s); rt = Benchmark.realtime { yield }; puts "=> #{rt}\n\n"; end
@@ -35,14 +38,27 @@ bm "POST using Orchestra ORM (uses genuid internally)" do
   end
 end
 
+bm "POST using ActiveRecord" do
+  N.times do
+    ArUser.create( $data1 )
+  end
+end
+
+
+bm "GET using Rufus connection" do
+  (1..N).each do |i|
+    $db[i.to_s]
+  end
+end
+
 bm "GET using Orchestra ORM" do
   (1..N).each do |i|
     User.find(i)
   end
 end
 
-bm "GET using Rufus connection" do
+bm "GET using ActiveRecord" do
   (1..N).each do |i|
-    $db[i.to_s]
+    ArUser.find(i)
   end
 end

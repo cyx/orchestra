@@ -9,7 +9,7 @@ class Array
   end
 
   def same?( other_array )
-    self.size == other_array.size && contain?( other_array )
+    other_array.is_a?(Array) && self.size == other_array.size && contain?( other_array )
   end
   alias :equal? :same?
   alias :eql?   :same?
