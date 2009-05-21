@@ -8,6 +8,25 @@ end
 task :default => :test
 
 namespace :orchestra do
+  desc "Download Tokyo Server and Tokyo Tyrant and set them up"
+  task :setup do
+    TCABINET = "http://tokyocabinet.sourceforge.net/tokyocabinet-1.4.21.tar.gz"
+    TTYRANT  = "http://tokyocabinet.sourceforge.net/tyrantpkg/tokyotyrant-1.1.27.tar.gz"
+
+    INSTALL  = "./configure && make && sudo make install"
+    EXTRACT  = "cd ~/ && tar zxvf"
+
+    extract    = lambda { |version| "cd ~/ && tar zxvf #{version}.tar.gz && cd #{version}" }
+    version_of = lambda { |uri| uri.scan(/([a-zA-Z0-9\-\.\_]+?).tar.gz/).first.first }
+    run        = lambda { |version| puts `#{extract.call(version)} && #{INSTALL} && rm -rf #{version}*` }
+
+    `wget #{TCABINET} -O ~/#{version_of.call(TCABINET)}.tar.gz`
+    `wget #{TTYRANT} -O ~/#{version_of.call(TTYRANT)}.tar.gz`
+
+    run.call( version_of.call( TCABINET ) )
+    run.call( version_of.call( TTYRANT ) )
+  end
+
   desc "Start a cluster of TokyoTyrant servers for each model"
   task :start do
     require 'lib/orchestra'

@@ -9,7 +9,7 @@ ActiveRecord::Base.establish_connection({
 
 class ArUser < ActiveRecord::Base
   set_table_name :users
-  
+
   DROP = "DROP TABLE users"
   CREATE = "CREATE TABLE users ( id int(11) not null auto_increment, email varchar(100) not null, name varchar(100) not null, role varchar(7) not null, access int(1) not null, primary key(id));"
 
