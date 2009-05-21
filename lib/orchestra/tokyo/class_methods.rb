@@ -63,7 +63,7 @@ module Orchestra
       end
 
       def id( uid )
-        "#{self.name}:#{uid}"
+        uid.to_s
       end
     end
   end

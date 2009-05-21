@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+`rake orchestra:reset`
+
+ROOT = File.dirname(__FILE__) + '/..'
+N = 50_000
+
+require 'benchmark'
+require ROOT + '/test/test_helper'
+
+$db    = User.send(:db)
+$data1 = { 'email' => 'email@example.com', 'name' => 'john doe', 'role' => 'admin', 'access' => '5' }
+
+def h1( s ); puts s; puts '=' * s.length; puts; end
+def h2( s ); puts s; puts '-' * s.length; end
+def bm( s ); h2(s); rt = Benchmark.realtime { yield }; puts "=> #{rt}\n\n"; end
+
+h1 "NUMBER OF REPETITIONS: #{N}"
+
+bm "PUT w/ predetermined ID" do
+  (1..N).each do |i|
+    $db[i.to_s] = $data1
+  end
+end
+
+bm "PUT w/ genuid" do
+  N.times do
+    $db[$db.genuid.to_s] = $data1
+  end
+end
+
+bm "POST using Orchestra ORM (uses genuid internally)" do
+  N.times do
+    User.create( $data1 )
+  end
+end
+
+bm "GET using Orchestra ORM" do
+  (1..N).each do |i|
+    User.find(i)
+  end
+end
+
+bm "GET using Rufus connection" do
+  (1..N).each do |i|
+    $db[i.to_s]
+  end
+end

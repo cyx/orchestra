@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 desc "Run all the tests for the orchestra library"
 task :test do
   cmd = "bacon #{Dir[File.dirname(__FILE__) + '/test/**/*_test.rb'].join(' ')}"
@@ -55,5 +56,18 @@ namespace :orchestra do
         FileUtils.rm( pid )
       end
     end
+  end
+
+  task :reset => :stop do
+    require 'fileutils'
+    require 'lib/orchestra'
+
+    data_path = File.join(Orchestra.root, 'data')
+
+    if File.exist?( data_path )
+      FileUtils.rm_r( data_path )
+    end
+
+    `rake orchestra:start`
   end
 end
