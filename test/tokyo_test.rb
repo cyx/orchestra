@@ -1,6 +1,30 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
 describe "Orchestra::Tokyo" do
+  describe "User.post with some keys having symbols" do
+    it "should not raise an error" do
+      should.not.raise do
+        User.post( :email => "john@doe.com" )
+      end
+    end
+  end
+
+  describe "User.post with some values having symbols" do
+    it "should not raise an error" do
+      should.not.raise do
+        User.post( :email => :johndoe_com )
+      end
+    end
+  end
+
+  describe "User.post with some values having fixnums" do
+    it "should not raise an error" do
+      should.not.raise do
+        User.post( :email => :johndoe_com, :level => 1 )
+      end
+    end
+  end
+
   describe "User.post( email: john@doe.com )" do
     before do
       @before_post_size = User.size

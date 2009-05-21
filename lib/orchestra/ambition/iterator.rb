@@ -1,7 +1,7 @@
 module Orchestra
   module Ambition
-    class Context < Orchestra::BlankSlate
-      def __prepare__( klass, db )
+    class Iterator
+      def initialize( klass, db )
         @klass     = klass
         @db        = db
         @fields    = []
@@ -10,21 +10,22 @@ module Orchestra
       end
 
       def size
-        __results__( :pk_only => true ).size
+        query( :pk_only => true ).size
       end
+      alias :length :size
 
       def sort_by
-        yield  Orchestra::Ambition::Sorter.new( @sorting )
+        yield  Sorter.new( @sorting )
         return self
       end
 
       def select
-        yield  self
+        yield  ElementProxy.new( @fields )
         return self
       end
 
       def detect
-        yield  self
+        yield  ElementProxy.new( @fields )
         return first
       end
 
@@ -43,21 +44,21 @@ module Orchestra
       end
 
       def any?
-        yield  self if block_given?
+        yield  ElementProxy.new( @fields ) if block_given?
         return first != nil
       end
 
       def empty?
-        @klass.size.zero?
+        !any?
       end
 
       def all?
-        yield  self
+        yield  ElementProxy.new( @fields )
         return self.size == @klass.size
       end
 
       def to_a
-        __results__.map { |a| @klass.new(a) }
+        query.map { |a| @klass.new(a) }
       end
       alias :entries :to_a
 
@@ -66,17 +67,17 @@ module Orchestra
       end
 
       private
-      def method_missing( method, *args )
-        @fields << Condition.new( method )
-        @fields.last
-      end
-
-      def __results__( args = {} )
+      def query( args = {} )
         pk_only, no_pk = args[:pk_only], args[:no_pk]
 
-        @__results__ ||= @db.query do |q|
+        @query ||= @db.query do |q|
           @fields.each do |field|
-            q.add( field.name.to_s, field.operator, field.value.to_s, field.affirmative, field.no_index )
+            q.add( field.name.to_s,
+                   field.operator,
+                   field.value.to_s,
+                   field.affirmative,
+                   field.no_index
+                   )
           end
 
           @sorting.each do |field, direction|

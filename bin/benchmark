@@ -6,12 +6,13 @@ ROOT = File.dirname(__FILE__) + '/..'
 N = 50_000
 
 require 'benchmark'
-require ROOT + '/test/test_helper'
+require ROOT + '/lib/orchestra'
+require ROOT + '/test/fixtures/user'
+require ROOT + '/test/fixtures/ar_user'
 
 $db    = User.send(:db)
 $data1 = { 'email' => 'email@example.com', 'name' => 'john doe', 'role' => 'admin', 'access' => '5' }
 
-require ROOT + '/test/fixtures/ar_user'
 ArUser.truncate
 
 def h1( s ); puts s; puts '=' * s.length; puts; end

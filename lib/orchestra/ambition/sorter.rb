@@ -1,6 +1,6 @@
 module Orchestra
   module Ambition
-    class Sorter
+    class Sorter < Orchestra::BlankSlate
       attr_reader :sorting
 
       def initialize( sorting )

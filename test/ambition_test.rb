@@ -314,4 +314,38 @@ describe "given mark abaya, rico blanco, pepe smith, and david aguire" do
     end
   end
 
+  describe "when we execute empty? on users that are rockers" do
+    before do
+      @rockers = User.select { |u| u.type == 'rocker' }
+    end
+
+    it "should not be empty" do
+      @rockers.should.not.be.empty
+    end
+
+    describe "when we delete all rockers" do
+      before do
+        @rockers.each do |rocker|
+          rocker.destroy
+        end
+
+        @rockers = User.select { |u| u.type == 'rocker' }
+      end
+
+      it "should be empty" do
+        @rockers.should.be.empty
+      end
+
+      describe "when we add a user which isn't a rocker" do
+        before do
+          User.create('email' => 'april@boy.com', 'name' => 'april boy', 'type' => 'pop')
+        end
+
+        it "should still be empty" do
+          @rockers = User.select { |u| u.type == 'rocker' }
+          @rockers.should.be.empty
+        end
+      end
+    end
+  end
 end

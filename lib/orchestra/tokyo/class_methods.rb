@@ -11,7 +11,7 @@ module Orchestra
       alias :create :post
 
       def put( uid, attributes = {} )
-        attrs = attributes_with_meta( attributes )
+        attrs = sanitize_attributes(attributes_with_meta( attributes ))
         begin
           db[id(uid)] = attrs
         rescue Exception => e
@@ -56,6 +56,14 @@ module Orchestra
         }
         defaults['created_at'] = Time.now.utc.to_i.to_s unless attributes['created_at']
         (attributes || {}).merge( defaults )
+      end
+
+      def sanitize_attributes( attributes )
+        attrs = {}
+        attributes.each do |field, value|
+          attrs[field.to_s] = value.to_s
+        end
+        attrs
       end
 
       def db
