@@ -5,8 +5,8 @@ module Orchestra
 
     @@engine = Config.adapter
 
-    def self.table( klass )
-      @@engine.table( Config.host( klass ), Config.port( klass ) )
+    def self.table( host, port )
+      @@engine.table( host, port )
     end
   end
 end

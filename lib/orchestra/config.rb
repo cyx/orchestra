@@ -1,19 +1,11 @@
 require 'yaml'
+require 'forwardable'
+require 'uri'
 
 module Orchestra
   class Configuration
     def initialize
       @configuration = YAML.load_file( Orchestra.root + '/config/clustering.yml' )
-      @models = {}
-      if @configuration['models'].is_a?(Array)
-        @configuration['models'].each_with_index do |klass, index|
-          @models[klass] = { 'index' => index }
-        end
-      elsif @configuration['models'].is_a?(Hash)
-        @configuration['models'].each do |klass, settings|
-          @models[klass] = settings
-        end
-      end
     end
 
     def []( *args )
@@ -30,28 +22,35 @@ module Orchestra
     def adapter
       Storage.const_get(self['adapter'])
     end
+    
+    class ConnectionInformation
+      extend Forwardable
+      
+      def_delegators :@uri, :host, :port
 
-    def port( klass )
-      starting_port + model( klass )['index']
-    end
+      def initialize( model, uri, role, index = nil )
+        @model, @role, @index = model, role, index
+        @uri                  = URI.parse("http://#{uri.gsub('http://', '')}")
+      end
 
-    def host( klass )
-      model( klass )['host'] || 'localhost'
-    end
-
-    def models
-      @mapping ||= @models.map do |klass, settings|
-        { 'name' => klass.downcase }.merge( 'port' => port(klass), 'host' => host(klass) )
+      def sid
+        @sid ||= [ @model, @role, @index ].compact.join('-')
       end
     end
 
-    private
-    def starting_port
-      self[:port].to_i
+    class ClusterInformation < Struct.new(:model, :master, :slaves)
     end
 
-    def model( klass )
-      @models[ klass.to_s ] || raise(ArgumentError, "#{klass} doesn't appear to be a valid model of the system")
+    def clusters
+      self['connections'].map do |model, roles|
+        master = ConnectionInformation.new( model, roles['master'], 'master' )
+        slaves = []
+        roles['slave'].each_with_index do |slave, idx|
+          slaves << ConnectionInformation.new( model, slave, 'slave', idx )
+        end
+
+        ClusterInformation.new( model, master, slaves )
+      end
     end
   end
 

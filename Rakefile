@@ -49,44 +49,88 @@ namespace :orchestra do
 
     data_path = Pathname.new(data_path).realpath
     tmp_path  = Pathname.new(tmp_path).realpath
+    
+    master_start = proc { |c|
+      pid    = "#{tmp_path}/#{c.sid}.pid"
+      log    = "#{tmp_path}/#{c.sid}.log"
+      ulog   = "#{data_path}/#{c.sid}.ulog"
+      casket = "#{data_path}/#{c.sid}.tct"
 
-    Orchestra::Config.models.each do |c|
-      pid    = "#{tmp_path}/#{c['name']}.pid"
-      log    = "#{tmp_path}/#{c['name']}.log"
-      casket = "#{data_path}/#{c['name']}.tct"
+      FileUtils.mkdir_p( ulog )
 
-      puts "Starting a server for #{c['name']} on #{c['host']}:#{c['port']}"
-      `ttserver -port #{c['port']} -dmn -pid #{pid} -log #{log} #{casket}`
+      puts "Starting a server for #{c.sid} on #{c.host}:#{c.port}"
+      `ttserver -port #{c.port} -dmn -pid #{pid} -log #{log} -ulog #{ulog} -sid #{c.sid} #{casket}`
+    }
+
+    slave_start = proc { |c, m|
+      pid    = "#{tmp_path}/#{c.sid}.pid"
+      log    = "#{tmp_path}/#{c.sid}.log"
+      rts    = "#{tmp_path}/#{c.sid}.rts"
+
+      ulog   = "#{data_path}/#{c.sid}.ulog"
+      casket = "#{data_path}/#{c.sid}.tct"
+
+      FileUtils.mkdir_p( ulog )
+
+      puts "Starting a server for #{c.sid} on #{c.host}:#{c.port}"
+      `ttserver -port #{c.port} -dmn -pid #{pid} -log #{log} -ulog #{ulog} -sid #{c.sid} -mhost #{m.host} -mport #{m.port} -rts #{rts} #{casket}`
+    }
+
+    Orchestra::Config.clusters.each do |cluster|
+      master_start.call( cluster.master )
+      cluster.slaves.each do |slave|
+        slave_start.call( slave, cluster.master )
+      end
     end
   end
 
+  desc "Stop your tokyo tyrant clusters"
   task :stop do
     require 'lib/orchestra'
     require 'fileutils'
 
     tmp_path = File.join(Orchestra.root, 'tmp')
 
-    Orchestra::Config.models.each do |c|
-      pid = "#{tmp_path}/#{c['name']}.pid"
+    stop = proc { |c|
+      pid = "#{tmp_path}/#{c.sid}.pid"
 
       if File.exist?( pid )
         `kill -TERM \`cat #{pid}\``
-        puts "Stopping the server for #{c['name']}"
+        puts "Stopping the server for #{c.sid}"
         FileUtils.rm( pid )
+      end
+    }
+
+    Orchestra::Config.clusters.each do |cluster|
+      stop.call(cluster.master)
+      cluster.slaves.each { |s| stop.call(s) }
+    end
+  end
+
+  desc "Delete all data and tmp folders"
+  task :cleanup do
+    if not ENV['FORCE']
+      puts "WARNING: This operation will permanently delete all your data."
+      puts "execute this using 'rake orchestra:cleanup FORCE=true'"
+    else ENV['FORCE']
+      require 'fileutils'
+      require 'lib/orchestra'
+
+      data_path = File.join(Orchestra.root, 'data')
+      tmp_path  = File.join(Orchestra.root, 'tmp')
+
+      if File.exist?( data_path )
+        puts "Deleting data"
+        FileUtils.rm_r( data_path )
+      end
+
+      if File.exist?( tmp_path )
+        puts "Deleting tmp"
+        FileUtils.rm_r( tmp_path )
       end
     end
   end
 
-  task :reset => :stop do
-    require 'fileutils'
-    require 'lib/orchestra'
-
-    data_path = File.join(Orchestra.root, 'data')
-
-    if File.exist?( data_path )
-      FileUtils.rm_r( data_path )
-    end
-
-    `rake orchestra:start`
-  end
+  desc "Stop, cleanup, and start your clusters."
+  task :reset => [ :stop, :cleanup, :start ]
 end

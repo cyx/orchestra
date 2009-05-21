@@ -2,14 +2,35 @@
 # for now. But you may choose between two different adapters:
 # - Tokyo (Ruby FFI based)
 # - Edo   (Pure Ruby based on the original author's Ruby driver)
+# Tokyo Only
+# ==========
+# 
+# Orchestra assumes you're using tokyotyrant as your backend. You may 
+# select between two adapters as of now:
+# 1. Tokyo
+# --------
+# Uses rufus-tokyo (Rufus::Tokyo::Tyrant / Rufus::Tokyo::TyrantTable)
+#
+# 2. Edo
+# ------
+# Uses rufus-tokyo (Rufus::Edo::NetTyrant / Rufus::Edo::NetTyrantTable)
 adapter: Tokyo
 
-# Orchestra starts a new ttserver / for each model
-# Specify a starting port here
-port: 54321
+connections:
+  User:
+    master: 127.0.0.1:54321
+    slave:
+      - 127.0.0.1:54322
+      - 127.0.0.1:54323
+      - 127.0.0.1:54324
+      - 127.0.0.1:54325
 
-models:
-  - User
-  - Group
-  - Role
+  Group:
+    master: 127.0.0.1:54326
+    slave:
+      - 127.0.0.1:54327
 
+  Role:
+    master: 127.0.0.1:54328
+    slave:
+      - 127.0.0.1:54329

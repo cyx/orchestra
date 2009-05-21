@@ -23,7 +23,7 @@ module Orchestra
       alias :update :put
 
       def get( uid )
-        if attributes = db[id(uid)]
+        if attributes = db_slave[id(uid)]
           model = new( attributes.merge( :pk => uid ) )
         end
       end
@@ -43,7 +43,7 @@ module Orchestra
       end
 
       def size
-        db.size
+        db_slave.size
       end
       alias :count :size
 
@@ -67,7 +67,11 @@ module Orchestra
       end
 
       def db
-        @db ||= Storage.table( self )
+        Connection[self, 'master']
+      end
+
+      def db_slave
+        Connection[self, 'slave']
       end
 
       def id( uid )
