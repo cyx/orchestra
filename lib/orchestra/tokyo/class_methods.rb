@@ -71,7 +71,7 @@ module Orchestra
       end
 
       def db_slave
-        Connection[self, 'slave']
+        Connection[self, 'slave'] || db
       end
 
       def id( uid )

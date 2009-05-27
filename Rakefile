@@ -25,6 +25,9 @@ namespace :orchestra do
 
     run.call( version_of.call( TCABINET ) )
     run.call( version_of.call( TTYRANT ) )
+
+    puts `sudo gem install --no-ri --no-rdoc rufus-tokyo`
+    puts `sudo gem install --no-ri --no-rdoc careo-tokyotyrant --source=http://gems.github.com`
   end
 
   desc "Start a cluster of TokyoTyrant servers for each model"
@@ -58,7 +61,7 @@ namespace :orchestra do
 
       FileUtils.mkdir_p( ulog )
 
-      puts "Starting a server for #{c.sid} on #{c.host}:#{c.port}"
+      puts "# Starting a server for #{c.sid} on #{c.host}:#{c.port}"
       `ttserver -port #{c.port} -dmn -pid #{pid} -log #{log} -ulog #{ulog} -sid #{c.sid} #{casket}`
     }
 
@@ -72,7 +75,7 @@ namespace :orchestra do
 
       FileUtils.mkdir_p( ulog )
 
-      puts "Starting a server for #{c.sid} on #{c.host}:#{c.port}"
+      puts "# Starting a server for #{c.sid} on #{c.host}:#{c.port}"
       `ttserver -port #{c.port} -dmn -pid #{pid} -log #{log} -ulog #{ulog} -sid #{c.sid} -mhost #{m.host} -mport #{m.port} -rts #{rts} #{casket}`
     }
 
@@ -96,7 +99,7 @@ namespace :orchestra do
 
       if File.exist?( pid )
         `kill -TERM \`cat #{pid}\``
-        puts "Stopping the server for #{c.sid}"
+        puts "# Stopping the server for #{c.sid}"
         FileUtils.rm( pid )
       end
     }

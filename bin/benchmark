@@ -3,7 +3,7 @@
 `rake orchestra:reset`
 
 ROOT = File.dirname(__FILE__) + '/..'
-N = 50_000
+N = 100_000
 
 require 'benchmark'
 require ROOT + '/lib/orchestra'

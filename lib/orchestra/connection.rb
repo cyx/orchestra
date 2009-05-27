@@ -16,10 +16,12 @@ module Orchestra
         Thread.current[key(model_name, role)] ||= 
           Storage.table( *host_and_port_for( uri ) )
       when 'slave'
-        uris = [ Config['connections'][model_name.to_s][role] ].flatten
-        uri, index  = balance( key(model_name, role), uris )
-        Thread.current[key(model_name, role, index)] ||= 
-          Storage.table( *host_and_port_for( uri ) )
+        uris = [ Config['connections'][model_name.to_s][role] ].compact.flatten
+        if uris.any?
+          uri, index  = balance( key(model_name, role), uris )
+          Thread.current[key(model_name, role, index)] ||= 
+            Storage.table( *host_and_port_for( uri ) )
+        end
       end
     end
 
