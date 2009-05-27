@@ -3,26 +3,22 @@ require 'forwardable'
 
 module Orchestra
   class Connection
-    @@balancing = Hash.new { |h, k| h[k] = -1 }
-
     # Usage: 
     # - Orchestra::Connection['User', 'master'].table
     # - Orchestra::Connection['User', 'slave'].table
+    def self.[]( model_name, role, index = nil )
+      uris = [ Config['connections'][ model_name.to_s ][ role ] ].compact.flatten
 
-    def self.[]( model_name, role )
-      case role
-      when 'master'
-        uri = Config['connections'][ model_name.to_s ][ role ]
-        Thread.current[key(model_name, role)] ||= 
-          Storage.table( *host_and_port_for( uri ) )
-      when 'slave'
-        uris = [ Config['connections'][model_name.to_s][role] ].compact.flatten
-        if uris.any?
-          uri, index  = balance( key(model_name, role), uris )
-          Thread.current[key(model_name, role, index)] ||= 
-            Storage.table( *host_and_port_for( uri ) )
-        end
+      return if uris.empty?
+
+      if index
+        uri = uris[index]
+      else
+        uri, index = balance( key(model_name, role), uris )
       end
+
+      Thread.current[key(model_name, role, index)] ||=
+        Storage.table( *host_and_port_for(uri) )
     end
 
     def self.host_and_port_for( url )
@@ -36,9 +32,13 @@ module Orchestra
     end
 
     def self.balance( key, uris )
-      @@balancing[ key ] += 1 
-      @@balancing[ key ] = @@balancing[key] % uris.size
-      return uris[@@balancing[ key ]], @@balancing[key]
+      balancing[key] += 1 
+      balancing[key] = balancing[key] % uris.size
+      return uris[balancing[key]], balancing[key]
+    end
+
+    def self.balancing
+      Thread.current[ "OrchestraBalancing " ] ||= Hash.new { |h, k| h[k] = -1 }
     end
 
     def self.canonical_uri( uri )

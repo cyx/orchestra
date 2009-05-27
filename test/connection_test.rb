@@ -83,3 +83,38 @@ describe "the slave connections to User" do
   end
 end
 
+describe "the master connections to Role" do
+  before do
+    @master1 = Orchestra::Connection['Role', 'master']
+    @master2 = Orchestra::Connection['Role', 'master']
+  end
+  
+  describe "master1" do
+    it "should be present" do
+      @master1.should.not.be.nil
+    end
+    
+    it "should have a host equal to 127.0.0.1" do
+      @master1.host.should.equal '127.0.0.1'
+    end
+
+    it "should have a port equal to 54332" do
+      @master1.port.should.equal 54332
+    end
+  end
+
+  describe "master2" do
+    it "should be present" do
+      @master2.should.not.be.nil
+    end
+
+    it "should have a host equal to 127.0.0.1" do
+      @master2.host.should.equal '127.0.0.1'
+    end
+
+    it "should have a port equal to 54333" do
+      @master2.port.should.equal 54333
+    end
+  end
+end
+

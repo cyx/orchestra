@@ -65,6 +65,20 @@ namespace :orchestra do
       `ttserver -port #{c.port} -dmn -pid #{pid} -log #{log} -ulog #{ulog} -sid #{c.sid} #{casket}`
     }
 
+    dual_master_start = proc { |c,m|
+      pid    = "#{tmp_path}/#{c.sid}.pid"
+      log    = "#{tmp_path}/#{c.sid}.log"
+      rts    = "#{tmp_path}/#{c.sid}.rts"
+
+      ulog   = "#{data_path}/#{c.sid}.ulog"
+      casket = "#{data_path}/#{c.sid}.tct"
+
+      FileUtils.mkdir_p( ulog )
+
+      puts "# Starting a server for #{c.sid} on #{c.host}:#{c.port}"
+      `ttserver -port #{c.port} -dmn -pid #{pid} -log #{log} -ulog #{ulog} -sid #{c.sid} -mhost #{m.host} -mport #{m.port} -rts #{rts} #{casket}`
+    }
+
     slave_start = proc { |c, m|
       pid    = "#{tmp_path}/#{c.sid}.pid"
       log    = "#{tmp_path}/#{c.sid}.log"
@@ -80,9 +94,16 @@ namespace :orchestra do
     }
 
     Orchestra::Config.clusters.each do |cluster|
-      master_start.call( cluster.master )
-      cluster.slaves.each do |slave|
-        slave_start.call( slave, cluster.master )
+      cluster.each do |master, slaves, other_master|
+        if other_master
+          dual_master_start.call( master, other_master )
+        else
+          master_start.call( master, other_master )
+        end
+
+        slaves.each do |slave|
+          slave_start.call( slave, master )
+        end
       end
     end
   end
@@ -105,8 +126,8 @@ namespace :orchestra do
     }
 
     Orchestra::Config.clusters.each do |cluster|
-      stop.call(cluster.master)
-      cluster.slaves.each { |s| stop.call(s) }
+      cluster.masters.each { |s| stop.call(s) }
+      cluster.slaves.each  { |s| stop.call(s) }
     end
   end
 
